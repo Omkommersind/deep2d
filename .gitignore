@@ -1,0 +1,31 @@
+# Build output
+build/
+*.gb
+*.map
+*.sym
+*.lst
+*.asm
+*.ihx
+*.o
+
+# PNG2Asset output
+assets/*.tilemap
+assets/*_tiles.*
+assets/*_map.*
+
+# VSCode project settings
+.vscode/
+
+# Windows junk
+Thumbs.db
+desktop.ini
+
+# Git backups
+*.orig
+*.rej
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
