@@ -5,51 +5,91 @@ static UINT8 harpoon_x;
 static UINT8 harpoon_y;
 static Direction harpoon_dir;
 
-static UINT8 harpoon_frame = 0;
 static UINT8 harpoon_flip = 0;
-static UINT8 harpoon_active = 0;
 static UINT8 harpoon_anim_delay = 0;
+static UINT8 harpoon_rope_len = 0;
+static HarpoonState harpoon_state = HARPOON_INACTIVE;
+
 #define HARPOON_DELAY_FRAMES 6
+#define HARPOON_SPRITE_START 2
+#define HARPOON_SEGMENTS 3
+#define HARPOON_PAUSE_FRAMES 6
+#define HARPOON_EXTEND_DELAY 6
+#define HARPOON_RETRACT_DELAY 12
 
 void harpoon_start(UINT8 x, UINT8 y, Direction dir) {
     harpoon_x = x;
     harpoon_y = y;
     harpoon_dir = dir;
-    harpoon_frame = 0;
+    harpoon_rope_len = 0;
     harpoon_flip = 0;
     harpoon_anim_delay = 0;
-    harpoon_active = 1;
+    harpoon_state = HARPOON_EXTENDING;
 }
 
 void harpoon_animate(void) {
-    if (!harpoon_active || harpoon_frame >= 4) return;
+    if (harpoon_state == HARPOON_INACTIVE) return;
 
-    if (harpoon_anim_delay < HARPOON_DELAY_FRAMES) {
+    UINT8 required_delay = (harpoon_state == HARPOON_RETRACTING)
+                        ? HARPOON_RETRACT_DELAY
+                        : HARPOON_EXTEND_DELAY;
+
+    if (harpoon_anim_delay < required_delay) {
         harpoon_anim_delay++;
         return;
     }
 
-    harpoon_anim_delay = 0; // reset delay after animating
-
+    harpoon_anim_delay = 0;
+    harpoon_flip ^= 1;
     UINT8 flip_flag = harpoon_flip ? S_FLIPY : 0;
 
-    for (UINT8 i = 0; i < harpoon_frame; i++) {
-        UINT8 sprite_id = HARPOON_SPRITE_START + i;
-        set_sprite_tile(sprite_id, 2);
-        set_sprite_prop(sprite_id, flip_flag);
-        move_sprite(sprite_id, harpoon_x + harpoon_dir * (i * 8), harpoon_y);
+    if (harpoon_state == HARPOON_EXTENDING) {
+        // Draw all rope so far
+        for (UINT8 i = 0; i < harpoon_rope_len; i++) {
+            UINT8 sprite_id = HARPOON_SPRITE_START + i;
+            set_sprite_tile(sprite_id, 2);
+            set_sprite_prop(sprite_id, flip_flag);
+            move_sprite(sprite_id, harpoon_x + harpoon_dir * (i * 8), harpoon_y);
+        }
+
+        // Draw hook at the end
+        UINT8 hook_id = HARPOON_SPRITE_START + harpoon_rope_len;
+        set_sprite_tile(hook_id, 3);
+        set_sprite_prop(hook_id, flip_flag);
+        move_sprite(hook_id, harpoon_x + harpoon_dir * (harpoon_rope_len * 8), harpoon_y);
+
+        harpoon_rope_len++;
+
+        if (harpoon_rope_len > HARPOON_SEGMENTS) {
+            harpoon_rope_len = HARPOON_SEGMENTS;
+            harpoon_anim_delay = 0;
+            harpoon_state = HARPOON_PAUSING;
+        }
     }
+    else if (harpoon_state == HARPOON_PAUSING) {
+        static UINT8 pause_count = 0;
+        pause_count++;
+        if (pause_count >= HARPOON_PAUSE_FRAMES) {
+            pause_count = 0;
+            harpoon_state = HARPOON_RETRACTING;
+        }
+    }
+    else if (harpoon_state == HARPOON_RETRACTING) {
+        // First retract rope, then hook
+        if (harpoon_rope_len > 0) {
+            harpoon_rope_len--;
 
-    UINT8 hook_index = HARPOON_SPRITE_START + harpoon_frame;
-    set_sprite_tile(hook_index, 3);
-    set_sprite_prop(hook_index, flip_flag);
-    move_sprite(hook_index, harpoon_x + harpoon_dir * (harpoon_frame * 8), harpoon_y);
+            // Hide last rope segment
+            move_sprite(HARPOON_SPRITE_START + harpoon_rope_len, 0, 160);
 
-    harpoon_frame++;
-    harpoon_flip ^= 1;
-
-    if (harpoon_frame >= 4) {
-        harpoon_active = 0;
+            // Move hook to the new end
+            UINT8 hook_id = HARPOON_SPRITE_START + HARPOON_SEGMENTS;
+            move_sprite(hook_id, harpoon_x + harpoon_dir * (harpoon_rope_len * 8), harpoon_y);
+        } else {
+            // Now hide hook
+            move_sprite(HARPOON_SPRITE_START + HARPOON_SEGMENTS, 0, 160);
+            harpoon_state = HARPOON_INACTIVE;
+        }
     }
 }
 
