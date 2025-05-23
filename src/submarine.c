@@ -5,6 +5,7 @@
 #define SUBMARINE_TILE_COUNT 4
 #define SUBMARINE_SPRITE_START 0
 
+static UINT8 prev_joy = 0;
 static UINT8 submarine_x = 0;
 static UINT8 submarine_y = 0;
 Direction submarine_direction = DIRECTION_RIGHT;
@@ -51,13 +52,18 @@ void submarine_update(UINT8 joy) {
         submarine_direction = DIRECTION_RIGHT;
     }
 
-    if (joy & J_B) {
-        UINT8 start_x = (submarine_direction == DIRECTION_RIGHT)
-                        ? submarine_x + 16
-                        : submarine_x - 8;
-
-        harpoon_draw(start_x, submarine_y, submarine_direction);
+    // Fire harpoon once per button press
+    if ((joy & J_B) && !(prev_joy & J_B)) {
+        UINT8 front_x = (submarine_direction == DIRECTION_RIGHT)
+                      ? submarine_x + 16
+                      : submarine_x - 8;
+        harpoon_start(front_x, submarine_y, submarine_direction);
     }
+
+    // Animate harpoon each frame if active
+    harpoon_animate();
+
+    prev_joy = joy;
 }
 
 void submarine_move(UINT8 x, UINT8 y) {
