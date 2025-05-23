@@ -54,10 +54,12 @@ void submarine_update(UINT8 joy) {
 
     // Fire harpoon once per button press
     if ((joy & J_B) && !(prev_joy & J_B)) {
-        UINT8 front_x = (submarine_direction == DIRECTION_RIGHT)
-                      ? submarine_x + 16
-                      : submarine_x - 8;
-        harpoon_start(front_x, submarine_y, submarine_direction);
+        if (!harpoon_is_active()) {
+            UINT8 front_x = (submarine_direction == DIRECTION_RIGHT)
+                        ? submarine_x + 16
+                        : submarine_x - 8;
+            harpoon_start(front_x, submarine_y, submarine_direction);
+        }
     }
 
     // Animate harpoon each frame if active

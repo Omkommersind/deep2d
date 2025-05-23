@@ -5,7 +5,11 @@
 #include "types.h"
 
 #define HARPOON_SPRITE_START 2
-#define HARPOON_SEGMENTS 3
+#define HARPOON_DELAY_FRAMES 6
+#define HARPOON_SEGMENTS 4
+#define HARPOON_PAUSE_FRAMES 6
+#define HARPOON_EXTEND_DELAY 6
+#define HARPOON_RETRACT_DELAY 12
 
 typedef enum {
     HARPOON_INACTIVE,
@@ -17,5 +21,7 @@ typedef enum {
 void harpoon_start(UINT8 x, UINT8 y, Direction dir);
 void harpoon_animate(void);
 void harpoon_hide(void);
+
+UBYTE harpoon_is_active(void);
 
 #endif

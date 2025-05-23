@@ -10,12 +10,9 @@ static UINT8 harpoon_anim_delay = 0;
 static UINT8 harpoon_rope_len = 0;
 static HarpoonState harpoon_state = HARPOON_INACTIVE;
 
-#define HARPOON_DELAY_FRAMES 6
-#define HARPOON_SPRITE_START 2
-#define HARPOON_SEGMENTS 3
-#define HARPOON_PAUSE_FRAMES 6
-#define HARPOON_EXTEND_DELAY 6
-#define HARPOON_RETRACT_DELAY 12
+UBYTE harpoon_is_active(void) {
+    return harpoon_state != HARPOON_INACTIVE;
+}
 
 void harpoon_start(UINT8 x, UINT8 y, Direction dir) {
     harpoon_x = x;
