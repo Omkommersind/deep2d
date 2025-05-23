@@ -1,16 +1,15 @@
 #include <gb/gb.h>
-#include <gb/cgb.h>
-#include <stdio.h>
+#include "submarine.h"
 
 void main(void) {
-    // Set default grayscale-like palette (does nothing on GBC without tiles but is safe)
-    BGP_REG = 0xE4;
+    DISPLAY_ON;
+    SHOW_SPRITES;
 
-    // Simple "Hello" message
-    printf("Hello, deep2d!");
+    submarine_init();
+    submarine_draw(40, 72);
 
-    // Game loop
     while (1) {
         wait_vbl_done();
+        // You can move submarine here if you want
     }
 }
