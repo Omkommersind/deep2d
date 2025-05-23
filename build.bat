@@ -5,7 +5,7 @@ REM === Set GBDK path ===
 set GBDK_PATH=F:/retro_dev/gbdk
 
 REM === Source files ===
-set SRC=src\main.c src\submarine.c src\tiles\submarine.c
+set SRC=src\main.c src\submarine.c src\harpoon.c src\tiles\submarine.c
 
 REM === Output ROM ===
 set OUT=build\deep2d.gb
