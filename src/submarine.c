@@ -10,8 +10,8 @@ static UINT8 submarine_y = 0;
 Direction submarine_direction = DIRECTION_RIGHT;
 
 void submarine_init(void) {
-    // Load all 4 tiles: 0, 1 = body; 2 = rope; 3 = hook
-    set_sprite_data(SUBMARINE_SPRITE_START, SUBMARINE_TILE_COUNT, Submarine);
+    set_sprite_data(0, 4, Submarine);
+    submarine_direction = DIRECTION_RIGHT;
 }
 
 Direction submarine_get_direction(void) {
