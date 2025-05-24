@@ -48,15 +48,17 @@ void submarine_draw(UINT8 x, UINT8 y) {
 
 void submarine_update(UINT8 joy) {
     // Handle movement and direction
-    if (joy & J_LEFT) {
-        submarine_direction = DIRECTION_LEFT;
-        if (submarine_x > SUBMARINE_MIN_X)
-            submarine_x -= SUBMARINE_SPEED;
-    }
-    else if (joy & J_RIGHT) {
-        submarine_direction = DIRECTION_RIGHT;
-        if (submarine_x < SUBMARINE_MAX_X)
-            submarine_x += SUBMARINE_SPEED;
+    if (!harpoon_is_active()) {
+        if (joy & J_LEFT) {
+            submarine_direction = DIRECTION_LEFT;
+            if (submarine_x > SUBMARINE_MIN_X)
+                submarine_x -= SUBMARINE_SPEED;
+        }
+        else if (joy & J_RIGHT) {
+            submarine_direction = DIRECTION_RIGHT;
+            if (submarine_x < SUBMARINE_MAX_X)
+                submarine_x += SUBMARINE_SPEED;
+        }
     }
 
     submarine_move(submarine_x, submarine_y);
