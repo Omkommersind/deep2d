@@ -21,6 +21,7 @@ typedef enum {
 void harpoon_start(Direction dir);
 void harpoon_animate(void);
 void harpoon_hide(void);
+static void harpoon_follow_submarine_y(void);
 
 UBYTE harpoon_is_active(void);
 
