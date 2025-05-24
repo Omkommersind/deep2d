@@ -1,5 +1,5 @@
 #include "harpoon.h"
-#include "tiles/submarine.h"
+#include "../tiles/submarine.h"
 
 static UINT8 harpoon_x;
 static UINT8 harpoon_y;

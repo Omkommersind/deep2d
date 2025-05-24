@@ -2,7 +2,7 @@
 #define HARPOON_H
 
 #include <gb/gb.h>
-#include "types.h"
+#include "../types.h"
 
 #define HARPOON_SPRITE_START 2
 #define HARPOON_DELAY_FRAMES 6

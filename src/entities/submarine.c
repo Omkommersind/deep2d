@@ -1,5 +1,5 @@
 #include "submarine.h"
-#include "tiles/submarine.h"
+#include "../tiles/submarine.h"
 #include "harpoon.h"
 
 #define SUBMARINE_TILE_COUNT 4
