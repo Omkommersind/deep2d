@@ -5,10 +5,16 @@
 #define SUBMARINE_SPEED 1
 #define SUBMARINE_MIN_X 8
 #define SUBMARINE_MAX_X 160
+#define SUBMARINE_IDLE_DELAY 60  // 1 second
+#define SUBMARINE_SINK_RATE 30   // 1px per 0.5 seconds
 
 static UINT8 prev_joy = 0;
 static UINT8 submarine_x = 0;
 static UINT8 submarine_y = 0;
+static UINT16 submarine_idle_frames = 0;
+static UINT16 submarine_sink_timer = 0;
+
+
 Direction submarine_direction = DIRECTION_RIGHT;
 
 void submarine_init(void) {
@@ -47,18 +53,39 @@ void submarine_draw(UINT8 x, UINT8 y) {
 }
 
 void submarine_update(UINT8 joy) {
+    UBYTE moving = 0;
+
     // Handle movement and direction
     if (!harpoon_is_active()) {
         if (joy & J_LEFT) {
             submarine_direction = DIRECTION_LEFT;
             if (submarine_x > SUBMARINE_MIN_X)
                 submarine_x -= SUBMARINE_SPEED;
+            moving = 1;
         }
         else if (joy & J_RIGHT) {
             submarine_direction = DIRECTION_RIGHT;
             if (submarine_x < SUBMARINE_MAX_X)
                 submarine_x += SUBMARINE_SPEED;
+            moving = 1;
         }
+    }
+
+    if (moving) {
+        submarine_idle_frames = 0;
+        submarine_sink_timer = 0;
+    } else {
+        if (submarine_idle_frames >= SUBMARINE_IDLE_DELAY) {
+            submarine_sink_timer++;
+            if (submarine_sink_timer >= SUBMARINE_SINK_RATE) {
+                submarine_y++;  // sink 1 pixel
+                submarine_sink_timer = 0;
+            }
+        } else {
+            submarine_sink_timer = 0;
+        }
+
+        submarine_idle_frames++;
     }
 
     submarine_move(submarine_x, submarine_y);
