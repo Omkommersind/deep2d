@@ -96,7 +96,7 @@ void submarine_update(UINT8 joy) {
             UINT8 front_x = (submarine_direction == DIRECTION_RIGHT)
                         ? submarine_x + 16
                         : submarine_x - 8;
-            harpoon_start(front_x, submarine_y, submarine_direction);
+            harpoon_start(submarine_direction);
         }
     }
 
@@ -131,7 +131,6 @@ void submarine_move(UINT8 x, UINT8 y) {
         move_sprite(1, x + 8, y);
     }
 }
-
 
 void submarine_hide(void) {
     for (UINT8 i = 0; i < 4; i++) {

@@ -18,7 +18,7 @@ typedef enum {
     HARPOON_RETRACTING
 } HarpoonState;
 
-void harpoon_start(UINT8 x, UINT8 y, Direction dir);
+void harpoon_start(Direction dir);
 void harpoon_animate(void);
 void harpoon_hide(void);
 
