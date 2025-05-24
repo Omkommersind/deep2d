@@ -36,7 +36,6 @@ void harpoon_animate(void) {
     }
 
     harpoon_anim_delay = 0;
-    harpoon_flip ^= 1;
 
     UINT8 flip_flag = 0;
     if (harpoon_flip) flip_flag |= S_FLIPY;
@@ -44,6 +43,7 @@ void harpoon_animate(void) {
 
     // ✅ Handle each state
     if (harpoon_state == HARPOON_EXTENDING) {
+        harpoon_flip ^= 1;
         harpoon_rope_len++;
         if (harpoon_rope_len > HARPOON_SEGMENTS) {
             harpoon_rope_len = HARPOON_SEGMENTS;
