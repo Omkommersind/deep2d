@@ -38,7 +38,9 @@ void harpoon_animate(void) {
 
     harpoon_anim_delay = 0;
     harpoon_flip ^= 1;
-    UINT8 flip_flag = harpoon_flip ? S_FLIPY : 0;
+    UINT8 flip_flag = 0;
+    if (harpoon_flip) flip_flag |= S_FLIPY;
+    if (harpoon_dir == DIRECTION_LEFT) flip_flag |= S_FLIPX;
 
     if (harpoon_state == HARPOON_EXTENDING) {
         // Draw all rope so far

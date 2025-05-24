@@ -14,4 +14,7 @@ Direction submarine_get_direction(void);
 UINT8 submarine_get_x(void);
 UINT8 submarine_get_y(void);
 
+#define SUBMARINE_TILE_COUNT 4
+#define SUBMARINE_SPRITE_START 0
+
 #endif

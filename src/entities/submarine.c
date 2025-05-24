@@ -2,8 +2,9 @@
 #include "../tiles/submarine.h"
 #include "harpoon.h"
 
-#define SUBMARINE_TILE_COUNT 4
-#define SUBMARINE_SPRITE_START 0
+#define SUBMARINE_SPEED 1
+#define SUBMARINE_MIN_X 8
+#define SUBMARINE_MAX_X 160
 
 static UINT8 prev_joy = 0;
 static UINT8 submarine_x = 0;
@@ -46,11 +47,19 @@ void submarine_draw(UINT8 x, UINT8 y) {
 }
 
 void submarine_update(UINT8 joy) {
+    // Handle movement and direction
     if (joy & J_LEFT) {
         submarine_direction = DIRECTION_LEFT;
-    } else if (joy & J_RIGHT) {
-        submarine_direction = DIRECTION_RIGHT;
+        if (submarine_x > SUBMARINE_MIN_X)
+            submarine_x -= SUBMARINE_SPEED;
     }
+    else if (joy & J_RIGHT) {
+        submarine_direction = DIRECTION_RIGHT;
+        if (submarine_x < SUBMARINE_MAX_X)
+            submarine_x += SUBMARINE_SPEED;
+    }
+
+    submarine_move(submarine_x, submarine_y);
 
     // Fire harpoon once per button press
     if ((joy & J_B) && !(prev_joy & J_B)) {
@@ -69,10 +78,31 @@ void submarine_update(UINT8 joy) {
 }
 
 void submarine_move(UINT8 x, UINT8 y) {
-    // Move only body
-    move_sprite(SUBMARINE_SPRITE_START + 0, x, y);
-    move_sprite(SUBMARINE_SPRITE_START + 1, x + 8, y);
+    UINT8 flip = (submarine_direction == DIRECTION_LEFT) ? S_FLIPX : 0;
+
+    if (submarine_direction == DIRECTION_RIGHT) {
+        // Normal order
+        set_sprite_tile(0, 0); // front
+        set_sprite_tile(1, 1); // back
+
+        set_sprite_prop(0, flip);
+        set_sprite_prop(1, flip);
+
+        move_sprite(0, x, y);
+        move_sprite(1, x + 8, y);
+    } else {
+        // Reversed tile order
+        set_sprite_tile(0, 1); // back becomes front
+        set_sprite_tile(1, 0); // front becomes back
+
+        set_sprite_prop(0, flip);
+        set_sprite_prop(1, flip);
+
+        move_sprite(0, x, y);
+        move_sprite(1, x + 8, y);
+    }
 }
+
 
 void submarine_hide(void) {
     for (UINT8 i = 0; i < 4; i++) {
