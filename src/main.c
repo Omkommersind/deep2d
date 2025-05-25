@@ -1,6 +1,6 @@
 #include <gb/gb.h>
-#include "entities/submarine.h"
-#include "entities/harpoon.h"
+#include "game/entities/submarine.h"
+#include "game/entities/harpoon.h"
 
 void main(void) {
     DISPLAY_ON;

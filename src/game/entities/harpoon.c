@@ -1,6 +1,6 @@
 #include "harpoon.h"
 #include "submarine.h"
-#include "../tiles/submarine.h"
+#include "../../tiles/submarine.h"
 
 static Direction harpoon_dir;
 

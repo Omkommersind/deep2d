@@ -2,7 +2,7 @@
 #define SUBMARINE_H
 
 #include <gb/gb.h>
-#include "../types.h"
+#include "../../types.h"
 
 void submarine_init(void);
 void submarine_draw(UINT8 x, UINT8 y);
