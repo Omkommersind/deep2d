@@ -1,10 +1,13 @@
 #include <gb/gb.h>
 #include "game/entities/submarine.h"
 #include "game/entities/harpoon.h"
+#include "game/world/background.h"
 
 void main(void) {
     DISPLAY_ON;
     SHOW_SPRITES;
+
+    //background_gradient_fill();
 
     submarine_init();
     submarine_draw(40, 72);
