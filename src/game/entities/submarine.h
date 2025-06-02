@@ -6,7 +6,7 @@
 
 void submarine_init(void);
 void submarine_draw(UINT8 x, UINT8 y);
-void submarine_move(UINT8 x, UINT8 y);
+void submarine_render(void);
 void submarine_hide(void);
 void submarine_update(void);
 void submarine_handle_input(UINT8 joy);
