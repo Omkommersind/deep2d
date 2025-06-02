@@ -2,45 +2,44 @@
 #include "../../tiles/submarine.h"
 #include "harpoon.h"
 
-#define SUBMARINE_ACCEL_X 1
-#define SUBMARINE_ACCEL_Y 1
-#define SUBMARINE_MAX_SPEED 2
-#define SUBMARINE_MIN_X 8
-#define SUBMARINE_MAX_X 160
-#define SUBMARINE_MIN_Y 16
-#define SUBMARINE_MAX_Y 144
+#define ACCEL_X 1
+#define ACCEL_Y 1
+#define MAX_SPEED 2
+#define MIN_X 8
+#define MAX_X 160
+#define MIN_Y 16
+#define MAX_Y 144
 
 static UINT8 prev_joy = 0;
-static INT8 submarine_vx = 0;
-static INT8 submarine_vy = 0;
-static UINT8 submarine_x = 0;
-static UINT8 submarine_y = 0;
+static INT8 vx = 0;
+static INT8 vy = 0;
+static UINT8 x = 0;
+static UINT8 y = 0;
+static Direction dir = DIRECTION_RIGHT;
 
-Direction submarine_direction = DIRECTION_RIGHT;
-
-void submarine_init(void) {
-    set_sprite_data(0, 4, Submarine);
-    submarine_direction = DIRECTION_RIGHT;
-    submarine_vx = 0;
-    submarine_vy = 0;
-}
+static void render(void);
 
 Direction submarine_get_direction(void) {
-    return submarine_direction;
+    return dir;
 }
 
 UINT8 submarine_get_x(void) {
-    return submarine_x;
+    return x;
 }
 
 UINT8 submarine_get_y(void) {
-    return submarine_y;
+    return y;
 }
 
-void submarine_draw(UINT8 x, UINT8 y) {
-    submarine_x = x;
-    submarine_y = y;
-    submarine_direction = DIRECTION_RIGHT;
+void submarine_init(void) {
+    set_sprite_data(0, 4, Submarine);
+    vx = 0;
+    vy = 0;
+}
+
+void submarine_draw(UINT8 start_x, UINT8 start_y) {
+    x = start_x;
+    y = start_y;
 
     set_sprite_tile(0, 0);
     set_sprite_tile(1, 1);
@@ -57,19 +56,19 @@ void submarine_draw(UINT8 x, UINT8 y) {
 void submarine_handle_input(UINT8 joy) {
     if (!harpoon_is_active()) {
         if (joy & J_LEFT) {
-            submarine_direction = DIRECTION_LEFT;
-            submarine_vx = -SUBMARINE_MAX_SPEED;
+            vx = -MAX_SPEED;
+            dir = DIRECTION_LEFT;
         } else if (joy & J_RIGHT) {
-            submarine_direction = DIRECTION_RIGHT;
-            submarine_vx = SUBMARINE_MAX_SPEED;
+            vx = MAX_SPEED;
+            dir = DIRECTION_RIGHT;
         } else {
-            submarine_vx = 0;
+            vx = 0;
         }
     }
 
     if ((joy & J_B) && !(prev_joy & J_B)) {
         if (!harpoon_is_active()) {
-            harpoon_start(submarine_direction);
+            harpoon_start(dir);
         }
     }
 
@@ -77,31 +76,29 @@ void submarine_handle_input(UINT8 joy) {
 }
 
 void submarine_update(void) {
-    // Apply velocity
-    submarine_x += submarine_vx;
+    x += vx;
 
-    // Automatic sinking
     static UINT8 sink_counter = 0;
     sink_counter++;
     if (sink_counter >= 30) {
-        submarine_y++;
+        y++;
         sink_counter = 0;
     }
 
-    // Clamp to screen bounds
-    if (submarine_x < SUBMARINE_MIN_X) submarine_x = SUBMARINE_MIN_X;
-    if (submarine_x > SUBMARINE_MAX_X) submarine_x = SUBMARINE_MAX_X;
-    if (submarine_y < SUBMARINE_MIN_Y) submarine_y = SUBMARINE_MIN_Y;
-    if (submarine_y > SUBMARINE_MAX_Y) submarine_y = SUBMARINE_MAX_Y;
+    if (x < MIN_X) x = MIN_X;
+    if (x > MAX_X) x = MAX_X;
+    if (y < MIN_Y) y = MIN_Y;
+    if (y > MAX_Y) y = MAX_Y;
 
-    submarine_render();
+    render();
     harpoon_animate();
 }
 
-void submarine_render(void) {
-    UINT8 flip = (submarine_direction == DIRECTION_LEFT) ? S_FLIPX : 0;
+static void render(void) {
+    Direction dir = submarine_get_direction();
+    UINT8 flip = (dir == DIRECTION_LEFT) ? S_FLIPX : 0;
 
-    if (submarine_direction == DIRECTION_RIGHT) {
+    if (dir == DIRECTION_RIGHT) {
         set_sprite_tile(0, 0);
         set_sprite_tile(1, 1);
     } else {
@@ -112,8 +109,8 @@ void submarine_render(void) {
     set_sprite_prop(0, flip);
     set_sprite_prop(1, flip);
 
-    move_sprite(0, submarine_x, submarine_y);
-    move_sprite(1, submarine_x + 8, submarine_y);
+    move_sprite(0, x, y);
+    move_sprite(1, x + 8, y);
 }
 
 void submarine_hide(void) {
