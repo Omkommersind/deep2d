@@ -6,17 +6,15 @@
 void main(void) {
     DISPLAY_ON;
     SHOW_SPRITES;
-
-    //background_gradient_fill();
+    SHOW_BKG;
 
     submarine_init();
-    submarine_draw(40, 72);
-    harpoon_hide();
+    submarine_draw(40, 80);
 
     while (1) {
         UINT8 joy = joypad();
-        submarine_update(joy);
-
+        submarine_handle_input(joy);
+        submarine_update();
         wait_vbl_done();
     }
 }

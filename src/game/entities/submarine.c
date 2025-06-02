@@ -2,22 +2,27 @@
 #include "../../tiles/submarine.h"
 #include "harpoon.h"
 
-#define SUBMARINE_SPEED 1
+#define SUBMARINE_ACCEL_X 1
+#define SUBMARINE_ACCEL_Y 1
+#define SUBMARINE_MAX_SPEED 2
 #define SUBMARINE_MIN_X 8
 #define SUBMARINE_MAX_X 160
-#define SUBMARINE_SINK_RATE 30   // 1px per 0.5 seconds
+#define SUBMARINE_MIN_Y 16
+#define SUBMARINE_MAX_Y 144
 
 static UINT8 prev_joy = 0;
+static INT8 submarine_vx = 0;
+static INT8 submarine_vy = 0;
 static UINT8 submarine_x = 0;
 static UINT8 submarine_y = 0;
-static UINT16 submarine_sink_timer = 0;
-
 
 Direction submarine_direction = DIRECTION_RIGHT;
 
 void submarine_init(void) {
     set_sprite_data(0, 4, Submarine);
     submarine_direction = DIRECTION_RIGHT;
+    submarine_vx = 0;
+    submarine_vy = 0;
 }
 
 Direction submarine_get_direction(void) {
@@ -31,7 +36,6 @@ UINT8 submarine_get_x(void) {
 UINT8 submarine_get_y(void) {
     return submarine_y;
 }
-
 
 void submarine_draw(UINT8 x, UINT8 y) {
     submarine_x = x;
@@ -50,56 +54,51 @@ void submarine_draw(UINT8 x, UINT8 y) {
     move_sprite(5, 0, 160);
 }
 
-void submarine_update(UINT8 joy) {
-    UBYTE moving = 0;
-
-    // Handle movement and direction
+void submarine_handle_input(UINT8 joy) {
     if (!harpoon_is_active()) {
         if (joy & J_LEFT) {
             submarine_direction = DIRECTION_LEFT;
-            if (submarine_x > SUBMARINE_MIN_X)
-                submarine_x -= SUBMARINE_SPEED;
-            moving = 1;
-        }
-        else if (joy & J_RIGHT) {
+            submarine_x--;
+        } else if (joy & J_RIGHT) {
             submarine_direction = DIRECTION_RIGHT;
-            if (submarine_x < SUBMARINE_MAX_X)
-                submarine_x += SUBMARINE_SPEED;
-            moving = 1;
+            submarine_x++;
         }
     }
 
-    submarine_sink_timer++;
-    if (submarine_sink_timer >= SUBMARINE_SINK_RATE) {
-        submarine_y++;  // sink 1 pixel
-        submarine_sink_timer = 0;
-    }
-
-    submarine_move(submarine_x, submarine_y);
-
-    // Fire harpoon once per button press
     if ((joy & J_B) && !(prev_joy & J_B)) {
         if (!harpoon_is_active()) {
-            UINT8 front_x = (submarine_direction == DIRECTION_RIGHT)
-                        ? submarine_x + 16
-                        : submarine_x - 8;
             harpoon_start(submarine_direction);
         }
     }
 
-    // Animate harpoon each frame if active
-    harpoon_animate();
-
     prev_joy = joy;
+}
+
+void submarine_update(void) {
+    // Automatic sinking
+    static UINT8 sink_counter = 0;
+    sink_counter++;
+    if (sink_counter >= 30) {
+        submarine_y++;
+        sink_counter = 0;
+    }
+
+    // Clamp to screen bounds
+    if (submarine_x < SUBMARINE_MIN_X) submarine_x = SUBMARINE_MIN_X;
+    if (submarine_x > SUBMARINE_MAX_X) submarine_x = SUBMARINE_MAX_X;
+    if (submarine_y < SUBMARINE_MIN_Y) submarine_y = SUBMARINE_MIN_Y;
+    if (submarine_y > SUBMARINE_MAX_Y) submarine_y = SUBMARINE_MAX_Y;
+
+    submarine_move(submarine_x, submarine_y);
+    harpoon_animate();
 }
 
 void submarine_move(UINT8 x, UINT8 y) {
     UINT8 flip = (submarine_direction == DIRECTION_LEFT) ? S_FLIPX : 0;
 
     if (submarine_direction == DIRECTION_RIGHT) {
-        // Normal order
-        set_sprite_tile(0, 0); // front
-        set_sprite_tile(1, 1); // back
+        set_sprite_tile(0, 0);
+        set_sprite_tile(1, 1);
 
         set_sprite_prop(0, flip);
         set_sprite_prop(1, flip);
@@ -107,9 +106,8 @@ void submarine_move(UINT8 x, UINT8 y) {
         move_sprite(0, x, y);
         move_sprite(1, x + 8, y);
     } else {
-        // Reversed tile order
-        set_sprite_tile(0, 1); // back becomes front
-        set_sprite_tile(1, 0); // front becomes back
+        set_sprite_tile(0, 1);
+        set_sprite_tile(1, 0);
 
         set_sprite_prop(0, flip);
         set_sprite_prop(1, flip);
