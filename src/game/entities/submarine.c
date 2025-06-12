@@ -4,17 +4,26 @@
 
 #define ACCEL_X 1
 #define ACCEL_Y 1
+
 #define MAX_SPEED 2
+
 #define MIN_X 8
 #define MAX_X 160
 #define MIN_Y 16
 #define MAX_Y 144
+
+#define MAX_VY 2
+
+#define FLOAT_STRENGTH -3
+#define GRAVITY_TICK 4
 
 static UINT8 prev_joy = 0;
 static INT8 vx = 0;
 static INT8 vy = 0;
 static UINT8 x = 0;
 static UINT8 y = 0;
+static UINT8 sink_delay = 0;
+static UINT8 sink_counter = 0;
 static Direction dir = DIRECTION_RIGHT;
 
 static void render(void);
@@ -57,33 +66,56 @@ void submarine_handle_input(UINT8 joy) {
     if (!harpoon_is_active()) {
         if (joy & J_LEFT) {
             vx = -MAX_SPEED;
-            dir = DIRECTION_LEFT;
         } else if (joy & J_RIGHT) {
             vx = MAX_SPEED;
-            dir = DIRECTION_RIGHT;
         } else {
             vx = 0;
         }
     }
 
+    // Apply upward force only when pressing A (reset each frame)
+    if (joy & J_A) {
+        vy = -1;  // gentle lift
+    } else {
+        vy = 0;
+    }
+
     if ((joy & J_B) && !(prev_joy & J_B)) {
         if (!harpoon_is_active()) {
-            harpoon_start(dir);
+            harpoon_start(submarine_get_direction());
         }
     }
 
     prev_joy = joy;
 }
 
+
 void submarine_update(void) {
     x += vx;
+    y += vy;
 
-    static UINT8 sink_counter = 0;
+    // Slow sinking like original
     sink_counter++;
     if (sink_counter >= 30) {
         y++;
         sink_counter = 0;
     }
+
+    // Gravity when not pressing A
+    if (!(prev_joy & J_A)) {
+        sink_delay++;
+        if (sink_delay >= 3) {
+            if (vy < MAX_SPEED) {
+                vy++;  // sink slower
+            }
+            sink_delay = 0;
+        }
+    } else {
+        sink_delay = 0; // reset delay
+    }
+
+    if (vy > MAX_SPEED) vy = MAX_SPEED;
+    if (vy < -MAX_SPEED) vy = -MAX_SPEED;
 
     if (x < MIN_X) x = MIN_X;
     if (x > MAX_X) x = MAX_X;
@@ -93,6 +125,7 @@ void submarine_update(void) {
     render();
     harpoon_animate();
 }
+
 
 static void render(void) {
     Direction dir = submarine_get_direction();
